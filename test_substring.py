@@ -11,26 +11,38 @@ import unittest
 
 from substring import substringDistinct as sD, substringUnique as sU
 
+# SYMBOLIC CONSTANTS IN UPPERCASE
+NULLFUNC = 0
+
 
 class MyFuncTestCase(unittest.TestCase):
 
-    def helper_Distinct(self, s, ss):
-        self.assertEqual(sD(s, 3), ss)
+    def helper_assertEqual(self, func1, s, limit1=0, func2=0, ss=0, limit2=0):
+        s1 = func1(s, limit1)
+        ss = ss or s
+        if func2:
+            ss = func2(ss, limit2)
+        self.assertEqual(s1, ss)
+
+    def helper_assertEqualOneCall(self, func1, s, limit=0, ss=0):
+        self.helper_assertEqual(func1, s, limit, NULLFUNC, ss, limit)
 
     def test_substringDistinct(self):
-        self.helper_Distinct("", "")
-        # self.assertEqual(sD("", 3), "")
-        # self.assertEqual(sD("a", 3), "a")
-        # self.assertEqual(sD("ab", 3), "ab")
-        # self.assertEqual(sD("abc", 3), "abc")
-        # self.assertEqual(sD("abcd", 3), "abc")
+        self.helper_assertEqualOneCall(sD, "")
+        self.helper_assertEqualOneCall(sD, "a", 3)
+        self.helper_assertEqualOneCall(sD, "ab", 3)
+        self.helper_assertEqualOneCall(sD, "abc", 3)
+        self.helper_assertEqualOneCall(sD, "abcd", 3, "abc")
+        self.helper_assertEqualOneCall(sD, "abcdefedc", 3, "defed")
+        self.helper_assertEqualOneCall(sD, "abcdefedc", 5, "bcdefedc")
 
     def test_substringUnique(self):
-        self.assertEqual(sU("", 3), "")
-        self.assertEqual(sU("a", 3), "a")
-        self.assertEqual(sU("ab", 3), "ab")
-        self.assertEqual(sU("abc", 3), "abc")
-        self.assertEqual(sU("abcd", 3), "abc")
+        self.helper_assertEqualOneCall(sU, "", 3)
+        self.helper_assertEqualOneCall(sU, "a", 3)
+        self.helper_assertEqualOneCall(sU, "ab", 3)
+        self.helper_assertEqualOneCall(sU, "abc", 3)
+        self.helper_assertEqualOneCall(sU, "abcd", 3, "abc")
+        self.helper_assertEqualOneCall(sU, "abcdefedc", 3, "ab")
 
     def test_DistinctIsUnique(self):
         self.assertEqual(sU("", 3), sD("", 3))

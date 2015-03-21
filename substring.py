@@ -16,17 +16,24 @@
 #           should return "def" for N == 3
 #
 
+# SYMBOLIC CONSTANTS IN UPPERCASE
+START = 0
+END = 1
+
 
 class DistinctChars:
     def __init__(self):
-        self.count = 0
-        self.members = {}
+        self.count = 0          # count of series of distinct chars
+        self.members = {}       # key of char, value idx of last occurence
+
+    def __str__(self):
+        return "count=%d, members=%s" % (self.count, self.members)
 
 
 class UniqueChars:
     def __init__(self):
         self.count = 0
-        self.occurs = {}        # key of character, value of first occurrence
+        self.occurs = {}        # key of char, value idx of first occurrence
         self.repeated = set()   # indices of repeats
 
     def __str__(self):
@@ -34,88 +41,86 @@ class UniqueChars:
             (self.count, self.occurs, self.repeated)
 
 
-class SubstringIndices:
-    def __init__(self):
-        self.start = 0
-        self.end = 0
-
-    def __str__(self):
-        return "start=%d, end=%d" % (self.start, self.end)
-
-
-def substringDistinct(s, distinctMax):
-    stringLength = len(s)
-    current = SubstringIndices()
-    longest = SubstringIndices()
+def substringDistinct(s, distinctMax=0):
+    current = [0, 0]    # start, end
+    longest = (0, 0)    # start, end
 
     distinct = DistinctChars()
 
-    while current.start < stringLength:
-        if current.end - current.start > longest.end - longest.start:
-            if distinct.count <= distinctMax:
-                # longest = current  in Python copies only the reference
-                longest.end = current.end
-                longest.start = current.start
+    while current[START] < len(s):
+        underLimit = isUnderLimitOrNoLimitSet(distinct.count, distinctMax)
+        longest = maxSubstringLimitedTo(longest, current, underLimit)
 
-        if distinct.count <= distinctMax and current.end < stringLength:
-            if not s[current.end] in distinct.members:
+        if underLimit and current[END] < len(s):
+            if s[current[END]] not in distinct.members:
                 distinct.count += 1
-            distinct.members[s[current.end]] = current.end
-            current.end += 1
+            distinct.members[s[current[END]]] = current[END]
+            current[END] += 1
         else:
-            if distinct.members[s[current.start]] == current.start:
-                del distinct.members[s[current.start]]
+            if distinct.members[s[current[START]]] == current[START]:
                 distinct.count -= 1
-            current.start += 1
+                del distinct.members[s[current[START]]]
 
-    return s[longest.start:longest.end]
+            current[START] += 1
+
+    return s[longest[START]:longest[END]]
 
 
-def substringUnique(s, uniqueMax):
-    stringLength = len(s)
+def substringUnique(s, uniqueMax=0):
+    unique = getIndicesOfRepeated(s)
 
-    current = SubstringIndices()
-    longest = SubstringIndices()
+    longest = findLongestUniqueUsingRepeats(s, unique, uniqueMax)
+
+    return s[longest[START]:longest[END]]
+
+
+def getIndicesOfRepeated(s):
+    current = [0, 0]
 
     unique = UniqueChars()
 
-    while current.start < stringLength:
-        if s[current.start] not in unique.occurs:
-            unique.occurs[s[current.start]] = current.start
+    while current[START] < len(s):
+        if s[current[START]] not in unique.occurs:
+            unique.occurs[s[current[START]]] = current[START]
         else:
-            unique.repeated.add(current.start)
-            unique.repeated.add(unique.occurs[s[current.start]])
+            unique.repeated.add(current[START])
+            unique.repeated.add(unique.occurs[s[current[START]]])
 
-        current.start += 1
+        current[START] += 1
 
-    current = SubstringIndices()
+    return unique
 
-    while current.start < stringLength:
-        if current.end - current.start > longest.end - longest.start:
-            if unique.count <= uniqueMax:
-                # longest = current  in Python copies only the reference
-                longest.end = current.end
-                longest.start = current.start
 
-        if (unique.count <= uniqueMax and current.end < stringLength and
-           current.end not in unique.repeated):
+def findLongestUniqueUsingRepeats(s, unique, uniqueMax):
+    current = [0, 0]
+    longest = (0, 0)
+
+    while current[START] < len(s):
+        underLimit = isUnderLimitOrNoLimitSet(unique.count, uniqueMax)
+        longest = maxSubstringLimitedTo(longest, current, underLimit)
+
+        if (underLimit and current[END] < len(s) and
+           current[END] not in unique.repeated):
             unique.count += 1
-            current.end += 1
+            current[END] += 1
         else:
-            if current.start in unique.repeated:
+            if current[START] in unique.repeated:
                 unique.count = 0
-                current.start = current.end
-                current.end += 1
+                current[START] = current[END]
+                current[END] += 1
 
-            current.start += 1
+            current[START] += 1
 
-    return s[longest.start:longest.end]
+    return longest
 
 
-def maxSubstring(longest, current):
-    if current.end - current.start > longest.end - longest.start:
-        return current
+def maxSubstringLimitedTo(longest, current, underLimit):
+    if underLimit and \
+       (current[END] - current[START] > longest[END] - longest[START]):
+        return (current[START], current[END])
     else:
         return longest
 
 
+def isUnderLimitOrNoLimitSet(count, limit):
+    return not limit or (count <= limit)
