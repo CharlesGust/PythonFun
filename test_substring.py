@@ -43,6 +43,7 @@ class MyFuncTestCase(unittest.TestCase):
         self.helper_assertEqualOneCall(sU, "abc", 3)
         self.helper_assertEqualOneCall(sU, "abcd", 3, "abc")
         self.helper_assertEqualOneCall(sU, "abcdefedc", 3, "ab")
+        self.helper_assertEqualOneCall(sU, "aba", 3, "b")
 
     def test_DistinctIsUnique(self):
         self.assertEqual(sU("", 3), sD("", 3))
