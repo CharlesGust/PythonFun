@@ -24,10 +24,10 @@ END = 1
 class DistinctChars:
     def __init__(self):
         self.count = 0          # count of series of distinct chars
-        self.members = {}       # key of char, value idx of last occurence
+        self.continue_char = {} # key of char, value idx of last occurence
 
     def __str__(self):
-        return "count=%d, members=%s" % (self.count, self.members)
+        return "count=%d, continue_char=%s" % (self.count, self.continue_char)
 
 
 class UniqueChars:
@@ -41,46 +41,53 @@ class UniqueChars:
             (self.count, self.occurs, self.repeated)
 
 
-def substringDistinct(s, distinctMax=0):
+def substring_distinct(s, distinct_max=0):
+    if distinct_max == 0:
+        return s
+
     current = [0, 0]    # start, end
     longest = (0, 0)    # start, end
 
     distinct = DistinctChars()
 
     while current[START] < len(s):
-        underLimit = isUnderLimitOrNoLimitSet(distinct.count, distinctMax)
-        longest = maxSubstringLimitedTo(longest, current, underLimit)
+        under_limit = under_limit_or_no_limit(distinct.count, distinct_max)
+        longest = max_substring_limited_to(longest, current, under_limit)
 
-        current, distinct = advanceStartOrEndForDistinct(current, distinct, s, underLimit)
+        current, distinct = advance_start_or_end_for_distinct(current,
+                                                              distinct,
+                                                              s,
+                                                              under_limit
+                                                              )
 
     return s[longest[START]:longest[END]]
 
 
-def advanceStartOrEndForDistinct(current, distinct, s, underLimit):
-    if underLimit and current[END] < len(s):
-        if s[current[END]] not in distinct.members:
+def advance_start_or_end_for_distinct(current, distinct, s, under_limit):
+    if under_limit and current[END] < len(s):
+        if s[current[END]] not in distinct.continue_char:
             distinct.count += 1
-        distinct.members[s[current[END]]] = current[END]
+        distinct.continue_char[s[current[END]]] = current[END]
         current[END] += 1
     else:
-        if distinct.members[s[current[START]]] == current[START]:
+        if distinct.continue_char[s[current[START]]] == current[START]:
             distinct.count -= 1
-            del distinct.members[s[current[START]]]
+            del distinct.continue_char[s[current[START]]]
 
         current[START] += 1
 
     return current, distinct
 
 
-def substringUnique(s, uniqueMax=0):
-    unique = getIndicesOfRepeated(s)
+def substring_unique(s, unique_max=0):
+    unique = build_repeated_positions(s)
 
-    longest = findLongestUniqueUsingRepeats(s, unique, uniqueMax)
+    longest = find_longest_unique_using_repeats(s, unique, unique_max)
 
     return s[longest[START]:longest[END]]
 
 
-def getIndicesOfRepeated(s):
+def build_repeated_positions(s):
     current = [0, 0]
 
     unique = UniqueChars()
@@ -97,21 +104,25 @@ def getIndicesOfRepeated(s):
     return unique
 
 
-def findLongestUniqueUsingRepeats(s, unique, uniqueMax):
+def find_longest_unique_using_repeats(s, unique, unique_max):
     current = [0, 0]
     longest = (0, 0)
 
     while current[START] < len(s):
-        underLimit = isUnderLimitOrNoLimitSet(unique.count, uniqueMax)
-        longest = maxSubstringLimitedTo(longest, current, underLimit)
+        under_limit = under_limit_or_no_limit(unique.count, unique_max)
+        longest = max_substring_limited_to(longest, current, under_limit)
 
-        current, unique = advanceStartOrEndForUnique(current, unique, s, underLimit)
+        current, unique = advance_start_or_end_for_unique(current,
+                                                          unique,
+                                                          s,
+                                                          under_limit
+                                                          )
 
     return longest
 
 
-def advanceStartOrEndForUnique(current, unique, s, underLimit):
-    if (underLimit and current[END] < len(s) and
+def advance_start_or_end_for_unique(current, unique, s, under_limit):
+    if (under_limit and current[END] < len(s) and
        current[END] not in unique.repeated):
         unique.count += 1
         current[END] += 1
@@ -125,13 +136,14 @@ def advanceStartOrEndForUnique(current, unique, s, underLimit):
 
     return current, unique
 
-def maxSubstringLimitedTo(longest, current, underLimit):
-    if underLimit and \
+
+def max_substring_limited_to(longest, current, under_limit):
+    if under_limit and \
        (current[END] - current[START] > longest[END] - longest[START]):
         return (current[START], current[END])
     else:
         return longest
 
 
-def isUnderLimitOrNoLimitSet(count, limit):
+def under_limit_or_no_limit(count, limit):
     return not limit or (count <= limit)

@@ -9,7 +9,7 @@ can be run with py.test
 import pytest  # used for the exception testing
 import unittest
 
-from substring import substringDistinct as sD, substringUnique as sU
+from substring import substring_distinct as sD, substring_unique as sU
 
 # SYMBOLIC CONSTANTS IN UPPERCASE
 NULLFUNC = 0
