@@ -24,10 +24,10 @@ END = 1
 class DistinctChars:
     def __init__(self):
         self.count = 0          # count of series of distinct chars
-        self.continue_char = {} # key of char, value idx of last occurence
+        self.continue_char_index = {} # key of char, value idx of last occurence
 
     def __str__(self):
-        return "count=%d, continue_char=%s" % (self.count, self.continue_char)
+        return "count=%d, continue_char_index=%s" % (self.count, self.continue_char_index)
 
 
 class UniqueChars:
@@ -65,14 +65,14 @@ def substring_distinct(s, distinct_max=0):
 
 def advance_start_or_end_for_distinct(current, distinct, s, under_limit):
     if under_limit and current[END] < len(s):
-        if s[current[END]] not in distinct.continue_char:
+        if s[current[END]] not in distinct.continue_char_index:
             distinct.count += 1
-        distinct.continue_char[s[current[END]]] = current[END]
+        distinct.continue_char_index[s[current[END]]] = current[END]
         current[END] += 1
     else:
-        if distinct.continue_char[s[current[START]]] == current[START]:
+        if distinct.continue_char_index[s[current[START]]] == current[START]:
             distinct.count -= 1
-            del distinct.continue_char[s[current[START]]]
+            del distinct.continue_char_index[s[current[START]]]
 
         current[START] += 1
 

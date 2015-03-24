@@ -12,7 +12,7 @@ import unittest
 from substring import substring_distinct as sD, substring_unique as sU
 
 # SYMBOLIC CONSTANTS IN UPPERCASE
-NULLFUNC = 0
+NULLFUNC = None
 
 
 class MyFuncTestCase(unittest.TestCase):
@@ -26,6 +26,9 @@ class MyFuncTestCase(unittest.TestCase):
 
     def helper_assertEqualOneCall(self, func1, s, limit=0, ss=0):
         self.helper_assertEqual(func1, s, limit, NULLFUNC, ss, limit)
+
+    def test_substringDistinctError(self):
+        self.helper_assertEqualOneCall(sD, None, 0, None)
 
     def test_substringDistinct(self):
         self.helper_assertEqualOneCall(sD, "")
